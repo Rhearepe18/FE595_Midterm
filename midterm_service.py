@@ -1,7 +1,10 @@
+from collections import defaultdict
 from flask import Flask, escape, request, Response, render_template, redirect, url_for
 #from fuzzywuzzy import fuzz
 from imdb import IMDb
 import json
+import operator
+import pandas as pd
 import re
 from textblob import TextBlob, Word, Blobber 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -177,8 +180,6 @@ def service1_result():
     def get_sentiment(user_movie_input):
         text = movie_selection(user_movie_input)
         blob = TextBlob(text)
-        blob.tags
-        blob.noun_phrases
         
         for sentence in blob.sentences:
             text_sentiment = sentence.sentiment.polarity
@@ -248,7 +249,7 @@ def service3_result():
 
         return lemma_sentence
 
-    movie1 = lemmatize_sentence(movie_selection(user_input))
+    movie1 = lemmatize_sentence(movie_selection(user_input1))
     movie2 = lemmatize_sentence(movie_selection(user_input2))
 
     score = cosine_similarity(movie1, movie2)
@@ -289,61 +290,74 @@ def service4_result():
 
     return render_template('present.html', output = mood_score)
 
-
-
-@app.route('/service5', methods = ['GET'])
+@app.route('/service5', methods = ['GET', 'POST'])
 def service5():
-    name = request.args.get("name", "Service5")
-    return f'Hello, {escape(name)}!'
-movie_info = str(movie_info)
-blob = TextBlob(movie_info)
-blob.tags
-
-# Top 10 nouns
-
-nouns = list(blob.noun_phrases)
-frequency = defaultdict(int)
-
-for noun in nouns:
-    if noun in frequency:
-        frequency[noun] += 1
+    render_template('one_input.html')
+    if request.method == "POST":
+        return redirect(url_for('/service5_result'))
     else:
-        frequency[noun] = 1
+        return render_template('one_input.html')  
 
-top_common_nouns = sorted(frequency.items(), key=operator.itemgetter(1), reverse=True)
-top_common_nouns = top_common_nouns[:10]
-count_top_ten = pd.DataFrame(top_common_nouns)
-count_noun = count_top_ten.rename(columns={0: "Nouns", 1: "Frequency"})
-print(count_noun)
+@app.route('/service5_result', methods = ['GET', 'POST'])
+def service5_result():
+    user_input1 = request.form['text']
 
+    def top_noun_phrases(user_movie_input): 
+        movie_info = movie_selection(user_movie_input)
+        blob = TextBlob(movie_info)
+        nouns = list(blob.noun_phrases)
+        frequency = defaultdict(int)
 
-@app.route('/service6', methods = ['GET'])
+        for noun in nouns:
+            if noun in frequency:
+                frequency[noun] += 1
+            else:
+                frequency[noun] = 1
+
+        top_common_nouns = sorted(frequency.items(), key=operator.itemgetter(1), reverse=True)
+        top_common_nouns = top_common_nouns[:10]
+        count_top_ten = pd.DataFrame(top_common_nouns)
+        count_noun = count_top_ten.rename(columns={0: "Nouns", 1: "Frequency"})
+        return count_noun
+
+    return render_template('present.html', output = top_noun_phrases(user_input1))
+
+@app.route('/service6', methods = ['GET', "POST"])
 def service6():
-    name = request.args.get("name", "Service6")
-    return f'Hello, {escape(name)}!'
-
-#Top 10 adjectives
-adjectives = []
-#Top adjectives using pos
-for word, pos in blob.tags:
-      if pos == 'JJ':
-      adjectives.append(word)
+    render_template('one_input.html')
+    if request.method == "POST":
+        return redirect(url_for('/service6_result'))
+    else:
+        return render_template('one_input.html')  
 
 
-count = list()
+@app.route('/service6_result', methods = ['GET', "POST"])
+def service6_result():
 
-for i in range(0, len(adjectives)):
-    count.append(adjectives.count(adjectives[i]))
+    user_input1 = request.form['text']
 
+    count = list()
+    adjectives = []
+    def top_adj(user_movie_input):
+        movie_info = movie_selection(user_movie_input)
+        blob = TextBlob(movie_info)
 
-top_adjectives = pd.DataFrame()
-top_adjectives['Adjectives'] = adjectives
-top_adjectives['Count'] = count
+        for word, pos in blob.tags:
+            if pos == 'JJ':
+                adjectives.append(word)
 
-sort_count = top_adjectives.sort_values('Count')
-top_adjectives = sort_count.drop_duplicates().tail(10)
+        for i in range(0, len(adjectives)):
+            count.append(adjectives.count(adjectives[i]))
 
+        top_adjectives = pd.DataFrame()
+        top_adjectives['Adjectives'] = adjectives
+        top_adjectives['Count'] = count
 
+        sort_count = top_adjectives.sort_values('Count',ascending = False)
+        top_adjectives = sort_count.drop_duplicates().head(10)
+        return top_adjectives
+
+    return render_template('present.html', output = top_adj(user_input1))
 
 if __name__ == "__main__":
     app.run(debug = True)
