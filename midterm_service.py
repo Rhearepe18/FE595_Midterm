@@ -295,12 +295,53 @@ def service4_result():
 def service5():
     name = request.args.get("name", "Service5")
     return f'Hello, {escape(name)}!'
+movie_info = str(movie_info)
+blob = TextBlob(movie_info)
+blob.tags
+
+# Top 10 nouns
+
+nouns = list(blob.noun_phrases)
+frequency = defaultdict(int)
+
+for noun in nouns:
+    if noun in frequency:
+        frequency[noun] += 1
+    else:
+        frequency[noun] = 1
+
+top_common_nouns = sorted(frequency.items(), key=operator.itemgetter(1), reverse=True)
+top_common_nouns = top_common_nouns[:10]
+count_top_ten = pd.DataFrame(top_common_nouns)
+count_noun = count_top_ten.rename(columns={0: "Nouns", 1: "Frequency"})
+print(count_noun)
 
 
 @app.route('/service6', methods = ['GET'])
 def service6():
     name = request.args.get("name", "Service6")
     return f'Hello, {escape(name)}!'
+
+#Top 10 adjectives
+adjectives = []
+#Top adjectives using pos
+for word, pos in blob.tags:
+      if pos == 'JJ':
+      adjectives.append(word)
+
+
+count = list()
+
+for i in range(0, len(adjectives)):
+    count.append(adjectives.count(adjectives[i]))
+
+
+top_adjectives = pd.DataFrame()
+top_adjectives['Adjectives'] = adjectives
+top_adjectives['Count'] = count
+
+sort_count = top_adjectives.sort_values('Count')
+top_adjectives = sort_count.drop_duplicates().tail(10)
 
 
 
