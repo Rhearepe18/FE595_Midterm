@@ -1,8 +1,10 @@
-from flask import Flask, escape, request
+from flask import Flask, escape, request, Response, render_template, redirect, url_for
+from fuzzywuzzy import fuzz
 from imdb import IMDb
 import json
 import re
-from textblob import TextBlob
+from textblob import TextBlob, Word
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 app = Flask(__name__)
 
