@@ -177,8 +177,6 @@ def service1_result():
     def get_sentiment(user_movie_input):
         text = movie_selection(user_movie_input)
         blob = TextBlob(text)
-        blob.tags
-        blob.noun_phrases
         
         for sentence in blob.sentences:
             text_sentiment = sentence.sentiment.polarity
