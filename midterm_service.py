@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 app = Flask(__name__)
 
 ia = IMDb()
-path_to_database = "/Users/asnafatimaali/Desktop/STEVENS/FE595/Midterm/database.txt"   # PATH TO DATABASE 
+path_to_database = "/Users/asnafatimaali/Desktop/STEVENS/FE595/Midterm_extra/database.txt"   # PATH TO DATABASE 
 with open(path_to_database, 'r') as file:
     data_base = json.loads(file.read())
 
@@ -21,31 +21,41 @@ number_list = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "one", "two", 
 "four", "five", "six", "seven", "eight", "nine", "ten","i", "ii", "iii", "iv", "v", "vi",
 "vii", "viii", "ix", "x"]
 
-user_input = "   HArry-Potter DEathly Hallows ii" ##### THIS WILL REFER TO USER'S INPUT
-user_input = re.sub(r'[^\w\s]', " ",user_input)
-user_input = re.sub(r" +", " ", user_input)
-
-user_input = TextBlob(user_input)
-
-movie_finder = []
-for token in user_input.words:
-    if token.lower() in number_list:
-        for num, number in numbers.items():
-            if re.search(token, num, re.IGNORECASE):
-                token = number
-    for key, value in data_base.items():
-        if re.search(token,key, re.IGNORECASE):
-            movie_finder.append(value)
-
+movie_input = "Lord of the Rings Fellowship" ##### THIS WILL REFER TO USER'S INPUT
+movie_input2 = "Lord of the Rings Fellowship" ##### THIS WILL REFER TO USER'S INPUT
 
 def top_match(finds):
     return max(set(finds), key=finds.count)
 
 
-max_id = top_match(movie_finder)
+def info_cleaner(movie_synopsis):
+    movie_synopsis = re.sub(r'[^\w\s\'\/]', " ", movie_synopsis) # remove everything that is not an alphanumeric and space
+    movie_synopsis = re.sub(r" \'", "", movie_synopsis) # this will remove quotes that are not used as apostrophes
+    movie_synopsis = re.sub(r" +", " ", movie_synopsis) # remove multiple spaces 
+    movie_synopsis = re.sub(r" \'", "", movie_synopsis)
+    movie_synopsis = re.sub(r"^[ \t]+|[ \t]+$", "", movie_synopsis) # remove trailing and leading spaces 
+    return movie_synopsis
 
-movie_info = ia.get_movie(max_id)
-movie_info = movie_info['synopsis']
+def movie_selection(user_input):
+    user_input = re.sub(r'[^\w\s]', " ",user_input)
+    user_input = re.sub(r" +" , " ", user_input)
+    user_input = TextBlob(user_input)
+    movie_finder = []
+    for token in user_input.words:
+        if token.lower() in number_list:
+            for num, number in numbers.items():
+                if re.search(token, num, re.IGNORECASE):
+                    token = number
+        for key, value in data_base.items():
+            if re.search(token,key, re.IGNORECASE):
+                movie_finder.append(value)
+
+    max_id = top_match(movie_finder)
+    movie_info = ia.get_movie(max_id)
+    movie_info = movie_info['synopsis']
+    movie_info = str(movie_info)
+    movie_info = info_cleaner(movie_info)
+    return movie_info
 
 
 @app.route('/homepage', methods =['GET', 'POST'])
