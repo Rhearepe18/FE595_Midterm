@@ -229,7 +229,7 @@ def service3():
     else:
         return render_template('two_input.html')
 
-@app.route('.service3_result', methods = ['GET', 'POST'])
+@app.route('/service3_result', methods = ['GET', 'POST'])
 def service3_result():
     user_input1 = request.form['text']
     user_input2 = request.form['text2']
