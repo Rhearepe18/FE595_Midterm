@@ -12,72 +12,48 @@ An AWS ec2 instance needs to be created. For more details on this please refer t
 
 
 # Installing
-A step by step series of commands to get you env running
+A step by step series of commands to get your environment running
 
 Preparing the AWS instance. First you need to have super user permissions to create folders:
 
 ```sudo su```
 
-Now we begin by installing git and Python 3 if they are not already present
+Install git and Python 3 if they are not already presenton the instance
 ```
 yum install git
 yum install python3
 ```
 
-We need to install new python packages with help of pip. So lets install pip.
+You may not need to install pip separately, but if you run into an error while installing the required libraries, use the following command:
 ```
 sudo easy_install pip
 ```
-If the installation is successful, you will be able to check the version of pip
 
+Install the following required libraries:
 ```
-pip --version
-```
-If this gives an error then we can try an alternate command
+pip3 install flask
 
-```
-python3 --version
-sudo apt-get install python-pip
-```
-This command might work, but if does not we need to download & install pip and setup PATH variable to get pip working. Use the following commands -
-```
-curl -O https://bootstrap.pypa.io/get-pip.py
-python3 get-pip.py --user
-pip --version
-```
-It is possible that the AWS instance Linux version still gives error for pip after this
-
-follow the below steps to add the installation path of pip to the PATH variable
-```
-echo $PATHecho $PATH
-export PATH=~/.local/bin:$PATH
-echo $PATH
-pip --version
-```
-Now we are ready to install the required libraries -
-```
-pip install requests
-
-pip install textblob
+pip3 install textblob
 
 python3 -m textblob.download_corpora
 
-pip install pandas
+pip3 install pandas
 
-pip install Flask-Limiter
+pip3 install sklearn
 ```
 We have made the code available in a git repo. Clone to repository and get the code
 ```
+cd ../..
 git clone https://github.com/AsnaFatimaAli/FE595_Midterm.git
-ls -ltr
-cd MidTerm/
+ls 
+cd FE595_MidTerm/
 ls -ltr
 ```
 Now lets try to run the flask application-
 ```
 python3 midterm_service.py
 [root@ip-172-31-43-40 MidTerm]# python3 midterm_service.py
- * Serving Flask app "midterm" (lazy loading)
+ * Serving Flask app "midterm_serice" (lazy loading)
  * Environment: production
    WARNING: This is a development server. Do not use it in a production deployment.
    Use a production WSGI server instead.
@@ -87,25 +63,23 @@ python3 midterm_service.py
 Now the applcation is up and running.
 
 # Running the tests
-You can look at the application swagger file using the base link - http://:8080/
-
-You can call the various end points as described in the swagger UI
+You can look at the application file using the base link - http://your specfic IP address :8080/
 
 # Built With
 
 Flask - The web framework used
 Git - Code management
-Textblob - Used to create the NLP services
+Textblob &sklearn - Used to create the NLP services
 
 # NLP Description Serivces
 
-Movie Sentiment: provides sentiment of the movie based on the movie's polarity synopsis.
+Movie Sentiment: provides sentiment of the movie based on the polarity of the movie's synopsis.
 
 Synopsis Translation: allows translation of the synopsis to different languages.
 
-Cosyine Similarity: compares how similar are two input movies.
+Cosine Similarity: compares how similar are two input movies.
 
-Mood Similarity: computes what's the mood of each of the input movies and compares both.
+Mood Similarity: computes how much of a mood specified the input movies is, and compares both.
 
 Count Noun: calculates the top noun phrases of a movie.
 
