@@ -4,15 +4,19 @@ from flask import Flask, escape, request, Response, render_template, redirect, u
 from imdb import IMDb
 import json
 import operator
+import os
 import pandas as pd
 import re
 from textblob import TextBlob, Word, Blobber 
 from sklearn.feature_extraction.text import TfidfVectorizer
+from urlparse import urljoin
 
 app = Flask(__name__)
 
 ia = IMDb()
-path_to_database = "/Users/asnafatimaali/Desktop/STEVENS/FE595/Midterm_extra/database.txt"   # PATH TO DATABASE 
+cwd = os.getcwd()
+path_to_database = (os.path.join(cwd, "database.txt"))
+#path_to_database = "/Users/asnafatimaali/Desktop/STEVENS/FE595/Midterm_extra/database.txt"   # PATH TO DATABASE 
 with open(path_to_database, 'r') as file:
     data_base = json.loads(file.read())
 
