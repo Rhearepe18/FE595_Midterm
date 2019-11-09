@@ -395,4 +395,4 @@ def service6_result():
     return render_template('present2.html', tables=[top_adjies.to_html(classes='data', header="true")])
 
 if __name__ == "__main__":
-    app.run(debug = True)
+    app.run(host='0.0.0.0', port=8080)
