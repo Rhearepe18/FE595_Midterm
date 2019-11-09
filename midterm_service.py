@@ -24,8 +24,6 @@ number_list = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "one", "two", 
 "four", "five", "six", "seven", "eight", "nine", "ten","i", "ii", "iii", "iv", "v", "vi",
 "vii", "viii", "ix", "x"]
 
-movie_input = "Lord of the Rings Fellowship" ##### THIS WILL REFER TO USER'S INPUT
-movie_input2 = "Lord of the Rings Fellowship" ##### THIS WILL REFER TO USER'S INPUT
 
 def top_match(finds):
     return max(set(finds), key=finds.count)
@@ -52,12 +50,16 @@ def movie_selection(user_input):
         for key, value in data_base.items():
             if re.search(token,key, re.IGNORECASE):
                 movie_finder.append(value)
-
-    max_id = top_match(movie_finder)
-    movie_info = ia.get_movie(max_id)
-    movie_info = movie_info['synopsis']
-    movie_info = str(movie_info)
-    movie_info = info_cleaner(movie_info)
+            else:
+                movie_finder.append("ERROR")
+    if "ERROR" in movie_finder:
+        movie_info = "ERROR"
+    else:
+        max_id = top_match(movie_finder)
+        movie_info = ia.get_movie(max_id)
+        movie_info = movie_info['synopsis']
+        movie_info = str(movie_info)
+        movie_info = info_cleaner(movie_info)
     return movie_info
 
 language = dict([('ab', 'Abkhaz'),
@@ -167,11 +169,11 @@ def homepage():
 
 @app.route('/service1', methods = ["GET", "POST"])
 def service1():
-    render_template('one_input.html')
+    render_template('one.html')
     if request.method == "POST":
         return redirect(url_for('/service1_result'))
     else:
-        return render_template('one_input.html')
+        return render_template('one.html')
 
 @app.route('/service1_result', methods = ['GET', 'POST'])
 def service1_result():
@@ -179,10 +181,12 @@ def service1_result():
 
     def get_sentiment(user_movie_input):
         text = movie_selection(user_movie_input)
-        blob = TextBlob(text)
-        
-        for sentence in blob.sentences:
-            text_sentiment = sentence.sentiment.polarity
+        if text == "ERROR":
+            text_sentiment = "Cannot Compute Sentiment for this Movie. Please Enter Another Title."
+        else:
+            blob = TextBlob(text)
+            for sentence in blob.sentences:
+                text_sentiment = sentence.sentiment.polarity
         
         return (text_sentiment)
     movie_sentiment = get_sentiment(user_input1)
@@ -191,11 +195,11 @@ def service1_result():
 
 @app.route('/service2',methods = ['GET', "POST"])
 def service2():
-    render_template('two_input.html')
+    render_template('two.html')
     if request.method == "POST":
         return redirect(url_for('/service2_result'))
     else:
-        return render_template('two_input.html')
+        return render_template('two.html')
 
 @app.route('/service2_result', methods = ['GET', "POST"])
 def service2_result():
@@ -204,7 +208,7 @@ def service2_result():
 
     def get_key(val):
         for key, value in language.items(): 
-            if val == value:
+            if val.lower() == value.lower():
                 lang = key
                 break
             else:
@@ -217,17 +221,21 @@ def service2_result():
             translation = chosen_language
         else:
             blob = TextBlob(movie_selection(user_movie_input))
-            translation = blob.translate(to = chosen_language)
+            if blob == "ERROR":
+                translation = "Cannot Translate for this Movie. Please Enter Another Title."
+            else:
+                translation = blob.translate(to = chosen_language)
         return(translation)
+
     return render_template('present.html', output = final_text(user_input1, user_input2))
 
 @app.route('/service3', methods = ['GET', 'POST'])
 def service3():
-    render_template('two_input.html')
+    render_template('three.html')
     if request.method == "POST":
         return redirect(url_for('/service3_result'))
     else:
-        return render_template('two_input.html')
+        return render_template('three.html')
 
 @app.route('/service3_result', methods = ['GET', 'POST'])
 def service3_result():
@@ -251,52 +259,63 @@ def service3_result():
 
     movie1 = lemmatize_sentence(movie_selection(user_input1))
     movie2 = lemmatize_sentence(movie_selection(user_input2))
-
-    score = cosine_similarity(movie1, movie2)
-    score = str(score)
+    if movie1 == "ERROR" or movie2 == "ERROR":
+        score = "Cannot Calculate the Similarity between these movies. Please Enter Another Title."
+    else:
+        score = cosine_similarity(movie1, movie2)
+        score = str(score)
     return render_template('present.html', output = score)
 
 
 @app.route('/service4', methods = ['GET', 'POST'])
 def service4():
-    render_template('two_input.html')
+    render_template('four.html')
     if request.method == "POST":
         return redirect(url_for('/service4_result'))
     else:
-        return render_template('two_input.html')
+        return render_template('four.html')
 
 
-@app.route('/service4_result', methods = ['GET', ' POST'])
+@app.route('/service4_result', methods = ['GET', 'POST'])
 def service4_result():
     user_input1 = request.form['text']
     user_input2 = request.form['text2']
 
+
     def mood_similarity(user_movie_input, mood_input):
-        if mood_input in happy_list:
-            service_output = "The cosine score of this being a happy movie is {}".format(cosine_similarity(user_movie_input, happy_list))
-        elif mood_input in sad_list:
-            service_output = "The cosine score of this being a sad movie is {}".format(cosine_similarity(user_movie_input, sad_list))
-        elif mood_input in scary_list:
-            service_output = "The cosine score of this being a scary movie is {}".format(cosine_similarity(user_movie_input, scary_list))
-        elif mood_input in mystery_list:
-            service_output = "The cosine score of this being a mysterious movie is {}".format(cosine_similarity(user_movie_input, mystery_list))
-        elif mood_input in romantic_list:
-            service_output = "The cosine score of this being a romantic movie is {}".format(cosine_similarity(user_movie_input, romantic_list))
-        elif mood_input in comedy_list:
-            service_output = "The cosine score of this being a comedic movie is {}".format(cosine_similarity(user_movie_input, comedy_list))
+        if movie_selection(user_movie_input) == "ERROR":
+            service_output = "Cannot Calculate the Mood of this Movie, please enter another title"
+        else:
+            user_movie_input = movie_selection(user_movie_input)
+            mood_input = str(mood_input)
+            if mood_input in happy_list:
+                service_output = "The cosine score of this being a happy movie is {}".format(cosine_similarity(user_movie_input, happy_list))
+            elif mood_input in sad_list:
+                service_output = "The cosine score of this being a sad movie is {}".format(cosine_similarity(user_movie_input, sad_list))
+            elif mood_input in scary_list:
+                service_output = "The cosine score of this being a scary movie is {}".format(cosine_similarity(user_movie_input, scary_list))
+            elif mood_input in mystery_list:
+                service_output = "The cosine score of this being a mysterious movie is {}".format(cosine_similarity(user_movie_input, mystery_list))
+            elif mood_input in romantic_list:
+                service_output = "The cosine score of this being a romantic movie is {}".format(cosine_similarity(user_movie_input, romantic_list))
+            elif mood_input in comedy_list:
+                service_output = "The cosine score of this being a comedic movie is {}".format(cosine_similarity(user_movie_input, comedy_list))
+            else:
+                service_output = "Please enter another mood, or a synonym variation."
         return(service_output)
 
     mood_score = mood_similarity(user_input1, user_input2)
+    mood_score = str(mood_score)
 
     return render_template('present.html', output = mood_score)
 
 @app.route('/service5', methods = ['GET', 'POST'])
 def service5():
-    render_template('one_input.html')
+    render_template('five.html')
     if request.method == "POST":
         return redirect(url_for('/service5_result'))
     else:
-        return render_template('one_input.html')  
+        return render_template('five.html')  
 
 @app.route('/service5_result', methods = ['GET', 'POST'])
 def service5_result():
@@ -304,31 +323,40 @@ def service5_result():
 
     def top_noun_phrases(user_movie_input): 
         movie_info = movie_selection(user_movie_input)
-        blob = TextBlob(movie_info)
-        nouns = list(blob.noun_phrases)
-        frequency = defaultdict(int)
+        if movie_info == "ERROR":
+            count_noun = "Cannot Calculate the Top Noun Phrases of this Movie, please enter another title"
+            count_noun = pd.DataFrame([x.split(';') for x in count_noun.split('\n')])
+        else:
+            blob = TextBlob(movie_info)
+            nouns = list(blob.noun_phrases)
+            frequency = defaultdict(int)
 
-        for noun in nouns:
-            if noun in frequency:
-                frequency[noun] += 1
-            else:
-                frequency[noun] = 1
+            for noun in nouns:
+                if noun in frequency:
+                    frequency[noun] += 1
+                else:
+                    frequency[noun] = 1
 
-        top_common_nouns = sorted(frequency.items(), key=operator.itemgetter(1), reverse=True)
-        top_common_nouns = top_common_nouns[:10]
-        count_top_ten = pd.DataFrame(top_common_nouns)
-        count_noun = count_top_ten.rename(columns={0: "Nouns", 1: "Frequency"})
+            top_common_nouns = sorted(frequency.items(), key=operator.itemgetter(1), reverse=True)
+            top_common_nouns = top_common_nouns[:10]
+            count_top_ten = pd.DataFrame(top_common_nouns)
+            count_noun = count_top_ten.rename(columns={0: "Nouns", 1: "Frequency"})
+            count_noun = count_noun.reset_index(drop=True)
+
         return count_noun
 
-    return render_template('present.html', output = top_noun_phrases(user_input1))
+    top_noun = top_noun_phrases(user_input1)
+
+    return render_template('present2.html', tables=[top_noun.to_html(classes='data', header="true")])
+
 
 @app.route('/service6', methods = ['GET', "POST"])
 def service6():
-    render_template('one_input.html')
+    render_template('six.html')
     if request.method == "POST":
         return redirect(url_for('/service6_result'))
     else:
-        return render_template('one_input.html')  
+        return render_template('six.html')  
 
 
 @app.route('/service6_result', methods = ['GET', "POST"])
@@ -340,24 +368,31 @@ def service6_result():
     adjectives = []
     def top_adj(user_movie_input):
         movie_info = movie_selection(user_movie_input)
-        blob = TextBlob(movie_info)
+        if movie_info == "ERROR":
+            top_adjectives = "Cannot Calculate the Top Adjectives of this Movie, please enter another title"
+            top_adjectives = pd.DataFrame([x.split(';') for x in top_adjectives.split('\n')])
+        else:
+            blob = TextBlob(movie_info)
 
-        for word, pos in blob.tags:
-            if pos == 'JJ':
-                adjectives.append(word)
+            for word, pos in blob.tags:
+                if pos == 'JJ':
+                    adjectives.append(word)
 
-        for i in range(0, len(adjectives)):
-            count.append(adjectives.count(adjectives[i]))
+            for i in range(0, len(adjectives)):
+                count.append(adjectives.count(adjectives[i]))
 
-        top_adjectives = pd.DataFrame()
-        top_adjectives['Adjectives'] = adjectives
-        top_adjectives['Count'] = count
+            top_adjectives = pd.DataFrame()
+            top_adjectives['Adjectives'] = adjectives
+            top_adjectives['Count'] = count
 
-        sort_count = top_adjectives.sort_values('Count',ascending = False)
-        top_adjectives = sort_count.drop_duplicates().head(10)
+            sort_count = top_adjectives.sort_values('Count',ascending = False)
+            top_adjectives = sort_count.drop_duplicates().head(10)
+            top_adjectives = top_adjectives.reset_index(drop=True)
         return top_adjectives
 
-    return render_template('present.html', output = top_adj(user_input1))
+    top_adjies = top_adj(user_input1) 
+
+    return render_template('present2.html', tables=[top_adjies.to_html(classes='data', header="true")])
 
 if __name__ == "__main__":
     app.run(debug = True)
