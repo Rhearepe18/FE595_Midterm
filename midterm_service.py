@@ -53,9 +53,7 @@ def movie_selection(user_input):
         for key, value in data_base.items():
             if re.search(token,key, re.IGNORECASE):
                 movie_finder.append(value)
-            else:
-                movie_finder.append("ERROR")
-    if "ERROR" in movie_finder:
+    if len(movie_finder) == 0:
         movie_info = "ERROR"
     else:
         max_id = top_match(movie_finder)
@@ -194,8 +192,7 @@ def service1_result():
         return (text_sentiment)
     movie_sentiment = get_sentiment(user_input1)
     return render_template('present.html', output = movie_sentiment)
-
-
+    
 @app.route('/service2',methods = ['GET', "POST"])
 def service2():
     render_template('two.html')
@@ -398,4 +395,5 @@ def service6_result():
     return render_template('present2.html', tables=[top_adjies.to_html(classes='data', header="true")])
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=8080)
+    app.run(debug = True)
+    #app.run(host='0.0.0.0', port=8080)
