@@ -35,7 +35,7 @@ pip --version
 ```
 If this gives an error then we can try an alternate command
 
-
+```
 python3 --version
 sudo apt-get install python-pip
 ```
@@ -55,7 +55,7 @@ echo $PATH
 pip --version
 ```
 Now we are ready to install the required libraries -
-'''
+```
 pip install requests
 
 pip install textblob
