@@ -9,7 +9,6 @@ import pandas as pd
 import re
 from textblob import TextBlob, Word, Blobber 
 from sklearn.feature_extraction.text import TfidfVectorizer
-from urlparse import urljoin
 
 app = Flask(__name__)
 
