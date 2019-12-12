@@ -394,5 +394,23 @@ def service6_result():
 
     return render_template('present2.html', tables=[top_adjies.to_html(classes='data', header="true")])
 
+
+@app.route('/service7_result', methods = ['GET', "POST"])
+def service6_result():
+
+
+
+
+@app.route('/service8_result', methods = ['GET', "POST"])
+def service6_result():
+
+
+
+@app.route('/service9_result', methods = ['GET', "POST"])
+def service6_result():
+
+
+
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
